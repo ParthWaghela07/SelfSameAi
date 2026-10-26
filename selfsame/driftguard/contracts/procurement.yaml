@@ -1,0 +1,7 @@
+role: procurement
+description: Checks supplier prices and creates purchase requests.
+allowed_actions: [read_file, write_file, http_request, delegate]
+read_zones: [procurement, inbox, shared]
+write_zones: [procurement]
+allowed_domains: [erp.corp.local, supplier-portal.corp.local]
+can_delegate_to: [summarizer]

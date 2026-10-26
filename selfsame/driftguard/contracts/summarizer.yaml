@@ -1,0 +1,7 @@
+role: summarizer
+description: Reads incoming documents and writes short summaries for other agents.
+allowed_actions: [read_file, write_file]
+read_zones: [inbox, procurement, shared]
+write_zones: [summaries]
+allowed_domains: []
+can_delegate_to: []

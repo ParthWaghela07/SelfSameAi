@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SelfSameAi</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#fff; --ink:#14181f; --muted:#5d6675; --line:#e2e5ea;
+  --ok:#1f9d63; --watch:#c28a00; --hold:#d9730d; --block:#d64545; --quar:#8f1d2c; --accent:#2f5bea;
+  --ok-bg:#e6f6ee; --watch-bg:#fbf3d9; --hold-bg:#fdeedd; --block-bg:#fbe6e6; --quar-bg:#f3dadd; --accent-bg:#e8eefd;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218; --panel:#171b23; --ink:#e8ebf0; --muted:#9aa4b2; --line:#2a303b;
+    --ok:#3fcf8e; --watch:#e6b422; --hold:#f29a45; --block:#ff6b6b; --quar:#ff8591; --accent:#7b9bff;
+    --ok-bg:#12281f; --watch-bg:#2b2410; --hold-bg:#2d2012; --block-bg:#2e1717; --quar-bg:#341a1f; --accent-bg:#1a2340;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;padding:14px 24px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:19px;margin:0;letter-spacing:.2px} h1 span{color:var(--accent)}
+.tag{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px}
+.switch{position:relative;width:42px;height:24px;background:var(--line);border-radius:12px;cursor:pointer;transition:.2s;border:0;padding:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.switch.on{background:var(--ok)} .switch.on::after{left:21px}
+.wrap{display:grid;grid-template-columns:260px 1fr;gap:20px;padding:20px 24px;max-width:1500px;margin:0 auto}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;padding:16px}}
+aside{display:flex;flex-direction:column;gap:6px}
+aside h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 0 4px}
+button.sc{all:unset;cursor:pointer;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:13px;line-height:1.3}
+button.sc:hover{border-color:var(--accent)} button.sc:focus-visible{outline:2px solid var(--accent)}
+button.sc.atk{border-left:4px solid var(--block)} button.sc.good{border-left:4px solid var(--ok)}
+button.reset{all:unset;cursor:pointer;text-align:center;padding:9px;border-radius:8px;border:1px dashed var(--muted);color:var(--muted);margin-top:10px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums} .kpi span{color:var(--muted);font-size:12px}
+.kpi.bad b{color:var(--block)} .kpi.good b{color:var(--ok)}
+.agents{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+@media(max-width:1100px){.agents{grid-template-columns:repeat(2,1fr)}}
+.agent{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;position:relative}
+.agent .nm{font-weight:600;font-size:13px;word-break:break-all}
+.agent .role{color:var(--muted);font-size:12px}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600;letter-spacing:.02em}
+.chip.normal{background:var(--ok-bg);color:var(--ok)} .chip.restricted{background:var(--hold-bg);color:var(--hold)} .chip.quarantined{background:var(--quar-bg);color:var(--quar)}
+.chip.L0{background:var(--ok-bg);color:var(--ok)} .chip.L1{background:var(--watch-bg);color:var(--watch)} .chip.L2{background:var(--hold-bg);color:var(--hold)} .chip.L3{background:var(--block-bg);color:var(--block)} .chip.L4{background:var(--quar-bg);color:var(--quar)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;border-radius:4px;transition:width .4s}
+.sub{font-size:11px;color:var(--muted)}
+.risk{font-size:12px;display:flex;justify-content:space-between}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;flex-wrap:wrap}
+.tabs button{all:unset;cursor:pointer;padding:9px 14px;color:var(--muted);border-bottom:2px solid transparent;font-weight:500}
+.tabs button.on{color:var(--ink);border-color:var(--accent)} .tabs button:focus-visible{outline:2px solid var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.rc{display:grid;grid-template-columns:96px 1fr;gap:16px}
+@media(max-width:700px){.rc{grid-template-columns:1fr}}
+.score{text-align:center;border-radius:10px;padding:10px 4px}
+.score b{font-size:34px;display:block;line-height:1} .score span{font-size:11px;font-weight:600}
+.score.L1{background:var(--watch-bg);color:var(--watch)} .score.L2{background:var(--hold-bg);color:var(--hold)} .score.L3{background:var(--block-bg);color:var(--block)} .score.L4{background:var(--quar-bg);color:var(--quar)}
+.rc h4{margin:0 0 4px;font-size:15px}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;margin-top:10px;font-size:13px}
+.kv div:nth-child(odd){color:var(--muted)}
+.sig{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:13px}
+.sig em{font-style:normal;font-weight:700;min-width:34px;color:var(--block)}
+.trigger{background:var(--accent-bg);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:13px}
+.empty{color:var(--muted);padding:30px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel)}
+tr.L1 td:first-child{border-left:3px solid var(--watch)} tr.L2 td:first-child{border-left:3px solid var(--hold)} tr.L3 td:first-child{border-left:3px solid var(--block)} tr.L4 td:first-child{border-left:3px solid var(--quar)}
+.scroll{max-height:520px;overflow:auto}
+.pill{display:inline-block;background:var(--accent-bg);color:var(--accent);padding:2px 8px;border-radius:6px;margin:2px 3px 2px 0;font-size:12px}
+.heat td.c{text-align:center;font-weight:600} .heat td.h{background:var(--ok-bg);color:var(--ok)} .heat td.m{background:var(--watch-bg);color:var(--watch)} .heat td.z{background:var(--block-bg);color:var(--block)}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+button.primary{all:unset;cursor:pointer;background:var(--accent);color:#fff;padding:9px 16px;border-radius:8px;margin-top:12px;font-weight:600}
+button.small{all:unset;cursor:pointer;font-size:12px;color:var(--accent);margin-left:8px;text-decoration:underline}
+.foot{color:var(--muted);font-size:12px;margin-top:10px}
+svg text{font-family:inherit}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.note{background:var(--hold-bg);color:var(--ink);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px;border-left:4px solid var(--hold)}
+</style>
+</head>
+<body>
+<header>
+  <h1>SelfSame<span>Ai</span></h1>
+  <span class="tag">Keeping autonomous agents true to their role. &middot; Credentials are always valid, behaviour is what we judge</span>
+  <span class="spacer"></span>
+  <div class="toggle"><span id="protLabel">Protection ON</span>
+    <button class="switch on" id="prot" role="switch" aria-checked="true" aria-label="Toggle protection"></button></div>
+</header>
+<div class="wrap">
+  <aside>
+    <h3>Run a scenario</h3><div id="sc-normal"></div>
+    <h3>Attacks</h3><div id="sc-attack"></div>
+    <h3>Legitimate change</h3><div id="sc-legit"></div>
+    <button class="reset" id="reset">Reset demo</button>
+    <p class="foot">Agents are scripted so every run is repeatable. Turn protection OFF to see what a credentials-only setup lets through.</p>
+  </aside>
+  <main>
+    <div class="kpis" id="kpis"></div>
+    <div class="agents" id="agents"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="view"></div>
+  </main>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path,body){const r=await fetch(path,{method:body!==undefined?'POST':'GET',headers:{'Content-Type':'application/json'},body:body!==undefined?JSON.stringify(body):undefined});return r.json()}
+const LV=['ALLOW','WATCH','HOLD FOR APPROVAL','RESTRICT','QUARANTINE'];
+const NEXT=['No action needed.','Keep an eye on this agent; no action taken yet.','A human must approve or deny this action. If the work is legitimate, register it as a planned change.','Sensitive access and outside sending were revoked. Review the trigger and rotate the agent token.','Agent isolated. Investigate the trigger, rotate credentials, then release the agent.'];
+const COLOR=['var(--ok)','var(--watch)','var(--hold)','var(--block)','var(--quar)'];
+let S=null, META=null, tab='alerts', EV=null, onlyFlagged=true;
+const TABS=[['alerts','Drift report cards'],['log','Event log'],['chain','Agent chain'],['contracts','Contracts & changes'],['eval','Evaluation'],['how','How it works']];
+
+async function init(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('tab'))tab=params.get('tab');
+  META=await api('/api/meta');
+  for(const s of META.scenarios){
+    const b=document.createElement('button');b.className='sc '+(s.attack?'atk':'good');b.textContent=s.title;
+    b.onclick=async()=>{S=await api('/api/run',{scenario:s.key});render()};
+    $(s.key.startsWith('legit')?'#sc-legit':s.attack?'#sc-attack':'#sc-normal').appendChild(b);
+  }
+  $('#reset').onclick=async()=>{S=await api('/api/reset',{enforce:S?S.enforce:true});render()};
+  $('#prot').onclick=async()=>{S=await api('/api/enforce',{enforce:!S.enforce});render()};
+  S=await api('/api/state');render();
+}
+function render(){
+  $('#prot').classList.toggle('on',S.enforce);$('#prot').setAttribute('aria-checked',S.enforce);
+  $('#protLabel').textContent=S.enforce?'Protection ON':'Protection OFF (credentials only)';
+  const m=S.metrics;
+  $('#kpis').innerHTML=[['Actions seen',m.events,''],['Alerts',m.alerts,m.alerts?'':'good'],['Actions stopped',m.blocked,m.blocked?'good':''],['KB leaked outside',m.kb_leaked,m.kb_leaked?'bad':'good'],['KB stopped from leaving',m.kb_stopped,m.kb_stopped?'good':'']]
+    .map(([l,v,c])=>`<div class="kpi ${c}"><b>${v.toLocaleString()}</b><span>${l}</span></div>`).join('');
+  $('#agents').innerHTML=S.agents.map(a=>{
+    const col=a.risk>=80?'var(--quar)':a.risk>=60?'var(--hold)':a.risk>=30?'var(--watch)':'var(--ok)';
+    return `<div class="agent"><div class="nm">${esc(a.id)}</div><div class="role">${esc(a.role)} role</div>
+      <div style="margin-top:8px"><span class="chip ${a.status}">${a.status.toUpperCase()}</span>
+      ${a.status!=='normal'?`<button class="small" onclick="release('${esc(a.id)}')">release</button>`:''}</div>
+      <div class="bar"><i style="width:${a.risk}%;background:${col}"></i></div>
+      <div class="risk"><span>risk ${a.risk}/100</span><span class="sub">drift budget ${a.budget}</span></div>
+      ${a.at_risk_from.length?`<div class="sub" style="color:var(--hold)">at risk: linked to ${esc(a.at_risk_from.join(', '))}</div>`:''}</div>`}).join('');
+  $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="setTab('${k}')">${l}</button>`).join('');
+  view();
+}
+async function release(id){S=await api('/api/release',{agent:id});render()}
+function setTab(t){tab=t;render()}
+function view(){({alerts:vAlerts,log:vLog,chain:vChain,contracts:vContracts,eval:vEval,how:vHow})[tab]()}
+
+function vAlerts(){
+  const al=S.events.filter(e=>e.level>=1&&!e.signals.some(g=>g.name==='quarantine')).reverse();
+  const refused=S.refused_while_quarantined||0;
+  if(!al.length){$('#view').innerHTML='<div class="card empty">No alerts yet. Run a scenario on the left.</div>';return}
+  $('#view').innerHTML=(refused?`<div class="note" style="background:var(--quar-bg);border-color:var(--quar)">${refused} further action(s) were refused automatically because the agent is quarantined. See the Event log.</div>`:'')+al.slice(0,40).map(e=>`<div class="card"><div class="rc">
+    <div class="score L${e.level}"><b>${e.score}</b><span>${LV[e.level]}</span></div>
+    <div><h4>${esc(e.agent)} &rarr; ${esc(e.action.replace('_',' '))} ${esc(e.target)}${e.size_kb?` (${e.size_kb} KB)`:''}</h4>
+      <div>${esc(e.summary)}</div>
+      <div style="margin-top:8px">${e.signals.map(s=>`<div class="sig"><em>+${s.points}</em><span>${esc(s.reason)}</span></div>`).join('')}</div>
+      ${e.cause?`<div class="trigger"><b>Likely trigger:</b> ${esc(e.cause)}${e.via.length?` &middot; carried by ${esc(e.via.join(' &rarr; '))}`:''}</div>`:''}
+      <div class="kv"><div>Action taken</div><div><span class="chip L${e.level}">${esc(e.action_taken)}</span></div>
+      <div>Outcome</div><div>${esc(e.outcome)}</div>
+      <div>Next step</div><div>${esc(NEXT[e.level])}</div></div>
+    </div></div></div>`).join('');
+}
+function vLog(){
+  const rows=S.events.filter(e=>!onlyFlagged||e.level>=1).slice(-120).reverse();
+  $('#view').innerHTML=`<div class="card"><label style="display:flex;gap:8px;align-items:center;margin:0 0 10px"><input type="checkbox" style="width:auto" ${onlyFlagged?'checked':''} onchange="onlyFlagged=this.checked;view()"> Show only flagged actions</label>
+  <div class="scroll"><table><tr><th>#</th><th>Agent</th><th>Action</th><th>Target</th><th>Score</th><th>Decision</th><th>Outcome</th></tr>
+  ${rows.map(e=>`<tr class="L${e.level}"><td>${e.idx}</td><td>${esc(e.agent)}</td><td>${esc(e.action)}</td><td>${esc(e.target)}</td><td>${e.score}</td><td><span class="chip L${e.level}">${LV[e.level]}</span></td><td>${esc(e.outcome)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nothing to show.</td></tr>'}
+  </table></div></div>`;
+}
+function vChain(){
+  const ag=S.agents,W=900,H=330,xs={};ag.forEach((a,i)=>xs[a.id]=90+i*(W-180)/Math.max(1,ag.length-1));
+  const yA=210,yD=60;let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Agent delegation and injection trace graph"><defs>
+   <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker>
+   <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--block)"/></marker></defs>`;
+  const pairs={};S.delegations.forEach(d=>{pairs[d.parent+'>'+d.child]=(pairs[d.parent+'>'+d.child]||{...d,n:0});pairs[d.parent+'>'+d.child].n++});
+  Object.values(pairs).forEach(d=>{const x1=xs[d.parent],x2=xs[d.child];const mid=(x1+x2)/2;
+    svg+=`<path d="M${x1} ${yA-26} Q${mid} ${yA-95} ${x2} ${yA-26}" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ar)"/><text x="${mid}" y="${yA-78}" text-anchor="middle" font-size="11" fill="var(--muted)">delegates &times;${d.n} (scope: ${esc(d.scope.join(','))})</text>`});
+  const docs=[...new Set(S.taints.filter(t=>!t.via.length).map(t=>t.source))];
+  docs.forEach((d,i)=>{const dx=W/2+(i-(docs.length-1)/2)*240;
+    svg+=`<rect x="${dx-95}" y="${yD-20}" width="190" height="34" rx="8" fill="var(--block-bg)" stroke="var(--block)"/><text x="${dx}" y="${yD+2}" text-anchor="middle" font-size="12" fill="var(--block)">${esc(d)}</text>
+    <text x="${dx}" y="${yD-28}" text-anchor="middle" font-size="10.5" fill="var(--muted)">hidden instruction found</text>`;
+    S.taints.filter(t=>!t.via.length&&t.source===d).forEach(t=>{svg+=`<line x1="${dx}" y1="${yD+14}" x2="${xs[t.agent]}" y2="${yA-28}" stroke="var(--block)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ar2)"/>`})});
+  ag.forEach(a=>{const x=xs[a.id],c=a.status==='quarantined'?'var(--quar)':a.status==='restricted'?'var(--hold)':'var(--ok)';
+    svg+=`<g><rect x="${x-70}" y="${yA-26}" width="140" height="52" rx="10" fill="var(--panel)" stroke="${c}" stroke-width="2.2" ${a.at_risk_from.length?'stroke-dasharray="6 3"':''}/>
+    <text x="${x}" y="${yA-5}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">${esc(a.id.replace('-agent',''))}</text>
+    <text x="${x}" y="${yA+13}" text-anchor="middle" font-size="11" fill="${c}">${a.status} &middot; risk ${a.risk}</text></g>`;
+    if(a.at_risk_from.length)svg+=`<text x="${x}" y="${yA+46}" text-anchor="middle" font-size="10.5" fill="var(--hold)">at risk (linked to ${esc(a.at_risk_from.join(', ').replace(/-agent/g,''))})</text>`});
+  svg+='</svg>';
+  $('#view').innerHTML=`<div class="card">${svg}<div class="legend"><span>Solid arrow: one agent hands work to another</span><span style="color:var(--block)">Red dashed: agent read a document with a hidden instruction</span><span style="color:var(--hold)">Dashed box: agent carried or worked with a flagged agent</span></div>
+  <p class="foot">Delegated authority only ever shrinks: a sub-agent can use the smaller of its own contract and what its caller handed it.</p></div>`;
+}
+function vContracts(){
+  const c=META.contracts;
+  const ch=S.changes;
+  $('#view').innerHTML=Object.values(c).map(k=>`<div class="card"><b>${esc(k.role)}</b> <span class="sub">&middot; ${esc(k.description)}</span>
+    <div class="kv"><div>May do</div><div>${k.allowed_actions.map(x=>`<span class="pill">${x}</span>`).join('')}</div>
+    <div>Reads</div><div>${k.read_zones.map(x=>`<span class="pill">${x}</span>`).join('')||'-'}</div>
+    <div>Writes</div><div>${k.write_zones.map(x=>`<span class="pill">${x}</span>`).join('')||'-'}</div>
+    <div>Talks to</div><div>${k.allowed_domains.map(x=>`<span class="pill">${x}</span>`).join('')||'nobody outside'}</div>
+    <div>Delegates to</div><div>${k.can_delegate_to.map(x=>`<span class="pill">${x}</span>`).join('')||'-'}</div></div></div>`).join('')+
+  `<div class="card"><b>Register a planned change</b><div class="sub">Legitimate new work should not look like drift. Registered changes expire on their own.</div>
+   <label>Agent</label><select id="chA">${S.agents.map(a=>`<option>${esc(a.id)}</option>`).join('')}</select>
+   <label>Reason</label><input id="chR" value="Q4 audit task">
+   <label>Extra zones it may read (comma separated)</label><input id="chZ" value="finance">
+   <button class="primary" onclick="addChange()">Register change</button>
+   <div style="margin-top:12px">${ch.length?ch.map(x=>`<div class="sig"><em style="color:${x.active?'var(--ok)':'var(--muted)'}">${x.active?'ACTIVE':'ended'}</em><span>${esc(x.agent_id)}: ${esc(x.reason)} (reads ${esc(x.add_read_zones.join(', '))})</span></div>`).join(''):'<span class="sub">No planned changes registered.</span>'}</div></div>`;
+}
+async function addChange(){S=await api('/api/change',{agent:$('#chA').value,reason:$('#chR').value,zones:$('#chZ').value.split(',').map(s=>s.trim()).filter(Boolean)});render()}
+async function vEval(){
+  $('#view').innerHTML='<div class="card empty">Running the benchmark (about 10 seconds)...</div>';
+  let r=await api('/api/eval');
+  while(!r.ready){await new Promise(z=>setTimeout(z,1200));if(tab!=='eval')return;r=await api('/api/eval')}
+  EV=r.result;if(tab!=='eval')return;
+  const T=EV.attack_titles,pc=x=>x==null?'-':Math.round(x*100)+'%';
+  const heads=Object.keys(T);
+  const cls=v=>v>=1?'h':v>0?'m':'z';
+  $('#view').innerHTML=`<div class="note"><b>Simulation results.</b> These come from scripted agents we built, not from real systems. They show which part of the design catches which attack. They are not a real-world accuracy claim.</div>
+  <div class="card"><b>Attack detection</b> <span class="sub">(10 runs per scenario, each run stops at first hold/block)</span>
+  <table style="margin-top:8px"><tr><th>Scenario</th><th>Detected</th><th>Actions before stop</th><th>Data leaked / attempted (KB)</th><th>Alert names the trigger</th><th>Credentials-only IAM</th></tr>
+  ${heads.map(k=>{const v=EV.attacks[k];return `<tr><td>${esc(T[k])}</td><td>${pc(v.detection_rate)}</td><td>${v.mean_actions_before_stop??'-'}</td><td>${v.kb_leaked} / ${v.kb_attempted}</td><td>${pc(v.source_named_rate)}</td><td style="color:var(--block)">0% (token is valid)</td></tr>`}).join('')}</table></div>
+  <div class="card"><b>False alarms</b><div class="kv"><div>Benign actions</div><div>${EV.false_alarms.benign_actions.toLocaleString()}</div><div>Held or blocked</div><div>${EV.false_alarms.held_or_blocked}</div><div>Watch-only flags</div><div>${EV.false_alarms.watch_only}</div></div>
+  <div class="kv"><div>Planned change, registered</div><div>${EV.legit_changes.legit_registered.avg_legit_actions_stopped} legitimate actions stopped</div><div>Same change, not registered</div><div>${EV.legit_changes.legit_unregistered.avg_legit_actions_stopped} held for human approval (by design: a person decides)</div></div>
+  <p class="foot">Benign behaviour here is scripted and fairly regular, so the false-alarm number is optimistic. Real traffic is noisier.</p></div>
+  <div class="card"><b>What each component is worth</b> <span class="sub">(detection rate with one component switched off)</span>
+  <table class="heat" style="margin-top:8px"><tr><th>Configuration</th>${heads.map(h=>`<th>${esc(T[h].replace('Attack: ',''))}</th>`).join('')}<th>Names trigger</th></tr>
+  ${Object.entries(EV.ablation).map(([n,row])=>`<tr><td>${esc(n)}</td>${heads.map(h=>`<td class="c ${cls(row[h])}">${pc(row[h])}</td>`).join('')}<td class="c ${cls(row._source_named)}">${pc(row._source_named)}</td></tr>`).join('')}</table></div>`;
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('scroll')==='ablation'){
+    const v=$('#view');
+    v.style.maxHeight='520px';
+    v.style.overflow='hidden';
+    const heat=$('.heat');
+    if(heat){
+      const card=heat.closest('.card');
+      if(card) v.scrollTop=card.offsetTop-10;
+    }
+  }
+}
+function vHow(){
+  const rows=[['Valid credentials hide the attack','We never ask "is it allowed?" We ask "is this what a procurement agent does?" Every action is checked against the role contract.'],
+   ['Indirect prompt injection','Documents an agent reads are scanned and remembered. When behaviour changes, the alert names the file that came just before.'],
+   ['Legitimate change vs drift','Admins register planned changes, which expire on their own. Unregistered changes are held for a human, not quarantined.'],
+   ['Little or no history','New agents inherit the role profile and are judged by the contract from their first action.'],
+   ['Chains of agents','Delegation is tracked. Poison read by a sub-agent is traced back through the chain, and carriers are marked at risk.'],
+   ['Evasion','Copying normal order does not help: destination, volume and data sensitivity are scored. A drift budget adds up small steps. Baselines learn only clean actions, so they cannot be poisoned.']];
+  $('#view').innerHTML=`<div class="card"><b>Pipeline</b><p>Agent action &rarr; Gateway &rarr; role contract + learned baseline + injection trace + chain state &rarr; risk score 0-100 with reasons &rarr; graduated response (watch, hold for approval, restrict, quarantine) &rarr; dashboard.</p>
+  <p class="sub">Rules and statistics decide. Nothing here relies on an AI model's opinion, so a decision is fast, repeatable and explainable.</p></div>
+  <div class="card"><b>How each hard part of the problem is handled</b><table style="margin-top:8px"><tr><th>Challenge</th><th>Our answer</th></tr>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('')}</table></div>
+  <div class="card"><b>Response levels</b><table style="margin-top:8px"><tr><th>Risk</th><th>What happens</th></tr>
+  <tr><td>0-29</td><td>Allowed</td></tr><tr><td>30-59</td><td>Allowed and watched</td></tr><tr><td>60-79</td><td>Action held for human approval</td></tr><tr><td>80-94</td><td>Blocked; sensitive access and outside sending revoked; normal work continues</td></tr><tr><td>95-100 or decoy touched</td><td>Agent quarantined</td></tr></table></div>`;
+}
+init();
+</script>
+</body>
+</html>

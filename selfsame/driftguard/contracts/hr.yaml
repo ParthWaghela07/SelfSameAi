@@ -1,0 +1,7 @@
+role: hr
+description: Maintains employee records and runs payroll lookups in the HR system.
+allowed_actions: [read_file, write_file, http_request]
+read_zones: [hr, shared]
+write_zones: [hr]
+allowed_domains: [hris.corp.local]
+can_delegate_to: []

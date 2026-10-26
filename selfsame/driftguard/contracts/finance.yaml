@@ -1,0 +1,7 @@
+role: finance
+description: Reads invoices, posts to the ledger and sends payment files to the bank gateway.
+allowed_actions: [read_file, write_file, http_request, send_data]
+read_zones: [finance, shared]
+write_zones: [finance]
+allowed_domains: [bank-gateway.corp.local, erp.corp.local]
+can_delegate_to: []
